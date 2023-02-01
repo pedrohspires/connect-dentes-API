@@ -48,14 +48,14 @@ namespace connect_dentes_API.Services.Implementations
             return ByteToString(salt);
         }
 
-        public string GetToken(UsuarioDto usuario)
+        public string GenerateToken(UsuarioDto usuario)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, usuario.Nome),
-                new Claim(ClaimTypes.Role, usuario.Role.ToString())
+                new Claim("nome", usuario.Nome),
+                new Claim("tipo", usuario.Tipo)
             };
             var token = new JwtSecurityToken(
                 _configuration["Jwt:Issuer"],
@@ -66,6 +66,54 @@ namespace connect_dentes_API.Services.Implementations
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<bool> GetAcesso(string token)
+        {
+            if (token == null)
+                throw new Exception("Forneça um token!");
+
+            return true;
+        }
+
+        public JwtSecurityToken LerToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var tokenJwt = handler.ReadJwtToken(token);
+
+            return tokenJwt;
+        }
+
+        public JwtSecurityToken ValidaToken(string token)
+        {
+            if (token == null)
+                throw new Exception("Token inválido!");
+
+            var tokenJwt = LerToken(token.Replace("Bearer", "").Trim());
+
+            if(tokenJwt.Payload == null)
+                throw new Exception("Token inválido!");
+
+            if(!tokenJwt.Payload.ContainsKey("nome"))
+                throw new Exception("Token inválido!");
+
+            if (!tokenJwt.Payload.ContainsKey("tipo"))
+                throw new Exception("Token inválido!");
+
+            return tokenJwt;
+        }
+
+        public DadosTokenDto GetDadosToken(string token)
+        {
+            var tokenJwt = ValidaToken(token);
+
+            var dadosToken = new DadosTokenDto
+            {
+                Nome = tokenJwt.Payload["nome"].ToString(),
+                Tipo = tokenJwt.Payload["tipo"].ToString()
+            };
+
+            return dadosToken;
         }
     }
 }
