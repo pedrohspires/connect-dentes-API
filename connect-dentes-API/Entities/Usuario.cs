@@ -1,5 +1,4 @@
-﻿using connect_dentes_API.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace connect_dentes_API.Entities
 {
@@ -21,7 +20,7 @@ namespace connect_dentes_API.Entities
         [Column("salt")]
         public string? Salt { get; set; }
 
-        [Column("role")]
-        public Roles Role { get; set; }
+        [Column("tipo")]
+        public string Tipo { get; set; }
     }
 }

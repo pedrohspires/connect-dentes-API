@@ -27,7 +27,7 @@ namespace connect_dentes_API.Controllers
             try
             {
                 var usuarioCadastrado = await _usuarioRepository.CreateAsync(usuario);
-                var token = _authService.GetToken(usuarioCadastrado);
+                var token = _authService.GenerateToken(usuarioCadastrado);
                 return Ok(token);
             }
             catch(Exception ex)
@@ -37,12 +37,13 @@ namespace connect_dentes_API.Controllers
         }
 
         [HttpPost("Entrar")]
+        [AllowAnonymous]
         public async Task<ActionResult<string>> Entrar([FromBody]UsuarioLoginDto usuario)
         {
             try
             {
                 var usuarioLogado = await _usuarioRepository.GetUsuarioAsync(usuario);
-                var token = _authService.GetToken(usuarioLogado);
+                var token = _authService.GenerateToken(usuarioLogado);
                 return Ok(token);
             }
             catch(Exception ex)
