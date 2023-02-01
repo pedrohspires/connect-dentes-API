@@ -1,8 +1,8 @@
 ﻿using connect_dentes_API.DTOs;
 using connect_dentes_API.Entities;
-using connect_dentes_API.Enums;
 using connect_dentes_API.Repositories.Interfaces;
 using connect_dentes_API.Services.Interfaces;
+using connect_dentes_API.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
@@ -78,7 +78,7 @@ namespace connect_dentes_API.Repositories.Implementations
                 Salt = salt,
                 Ativo = dto.Ativo,
                 DataCadastro = DateTime.Now,
-                Role = Roles.Medico
+                Tipo = Tipos.Medico
             };
 
             await _dbContext.Usuario.AddAsync(novoUsuario);
@@ -91,7 +91,7 @@ namespace connect_dentes_API.Repositories.Implementations
                 Email = novoUsuario.Email,
                 Ativo = novoUsuario.Ativo,
                 DataCadastro = novoUsuario.DataCadastro,
-                Role = Roles.Medico
+                Tipo = novoUsuario.Tipo
             };
         }
 
@@ -116,7 +116,7 @@ namespace connect_dentes_API.Repositories.Implementations
                 Email = usuarioLogado.Email,
                 Ativo = usuarioLogado.Ativo,
                 DataCadastro = usuarioLogado.DataCadastro,
-                Role = usuarioLogado.Role
+                Tipo = usuarioLogado.Tipo
             };
         }
     }
