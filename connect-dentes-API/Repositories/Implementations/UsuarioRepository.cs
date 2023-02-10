@@ -18,7 +18,7 @@ namespace connect_dentes_API.Repositories.Implementations
             _dbContext = dbContext;
             _authService = authService;
         }
-        
+
         private async Task<int> QuantidadeEmailDuplicado(string email)
         {
             return await _dbContext.Usuario.Where(x => x.Email == email).CountAsync();
@@ -62,6 +62,19 @@ namespace connect_dentes_API.Repositories.Implementations
 
             if (dto.Nome == null || dto.Nome.Length == 0)
                 throw new Exception("Preencha o nome!");
+
+            if ((dto.Tipo == null || dto.Tipo.Length == 0) && !(await VerificaPrimeiroCadastro()))
+                throw new Exception("Forneça um tipo válido para o usuário!");
+        }
+
+        private async Task<bool> VerificaPrimeiroCadastro()
+        {
+            var usuarios = await _dbContext.Usuario.FirstOrDefaultAsync();
+
+            if (usuarios == null)
+                return true;
+
+            return false;
         }
 
         public async Task<UsuarioDto> CreateAsync(UsuarioCadastroDto dto)
@@ -71,14 +84,15 @@ namespace connect_dentes_API.Repositories.Implementations
             var salt = _authService.GetSalt();
             var hashSenha = _authService.GetHashSenhaSHA256(dto.Senha, salt);
 
-            Usuario novoUsuario = new Usuario {
+            Usuario novoUsuario = new Usuario
+            {
                 Nome = dto.Nome,
                 Email = dto.Email,
                 Senha = hashSenha,
                 Salt = salt,
                 Ativo = dto.Ativo,
                 DataCadastro = DateTime.Now,
-                Tipo = Tipos.Medico
+                Tipo = await VerificaPrimeiroCadastro() ? Tipos.Admin : dto.Tipo.ToLower()
             };
 
             await _dbContext.Usuario.AddAsync(novoUsuario);
