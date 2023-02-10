@@ -119,5 +119,54 @@ namespace connect_dentes_API.Repositories.Implementations
                 Tipo = usuarioLogado.Tipo
             };
         }
+
+        public async Task<List<UsuarioSelectDto>> GetAllMedicos()
+        {
+            var medicos = await _dbContext.Usuario.Where(x => x.Tipo == Tipos.Medico).ToListAsync();
+
+            if (medicos == null)
+                throw new Exception("Nenhum médico encontrado!");
+
+            List<UsuarioSelectDto> medicosSelect = new List<UsuarioSelectDto>();
+
+            foreach(var medico in medicos)
+            {
+                medicosSelect.Add(new UsuarioSelectDto
+                {
+                    Id = medico.Id,
+                    Nome = medico.Nome
+                });
+            }
+
+            return medicosSelect;
+        }
+
+        public List<string> GetAcessos(string token, string controller)
+        {
+            var dadosToken = _authService.GetDadosToken(token);
+
+            var usuarioAcessos = new List<string>();
+
+            foreach (var acesso in Acessos.acessos)
+            {
+                if (acesso.controller.Contains(controller) && acesso.tiposAceitos.Contains(dadosToken.Tipo))
+                    usuarioAcessos.Add(acesso.controller.Split("_").LastOrDefault());
+            }
+
+            return usuarioAcessos;
+        }
+
+        public async Task<bool> Delete(int id)
+        {
+            var usuario = await _dbContext.Usuario.Where(x => x.Id == id).FirstOrDefaultAsync();
+
+            if (usuario == null)
+                throw new Exception("Usuario não encontrado!");
+
+            _dbContext.Usuario.Remove(usuario);
+            _dbContext.SaveChanges();
+
+            return true;
+        }
     }
 }
