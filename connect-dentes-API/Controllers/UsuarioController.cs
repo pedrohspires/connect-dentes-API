@@ -1,4 +1,5 @@
 ﻿using connect_dentes_API.DTOs;
+using connect_dentes_API.Repositories.Implementations;
 using connect_dentes_API.Repositories.Interfaces;
 using connect_dentes_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
