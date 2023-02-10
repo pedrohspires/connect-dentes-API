@@ -14,7 +14,7 @@ namespace connect_dentes_API.Entities
         public string? UsuarioCadastro { get; set; }
 
         [Column("data_edicao")]
-        public string? DataEdicao { get; set; }
+        public DateTime? DataEdicao { get; set; }
 
         [Column("usuario_edicao")]
         public string? UsuarioEdicao { get; set; }
