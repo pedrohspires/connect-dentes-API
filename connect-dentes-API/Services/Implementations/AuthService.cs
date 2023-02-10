@@ -1,5 +1,6 @@
 ﻿using connect_dentes_API.DTOs;
 using connect_dentes_API.Services.Interfaces;
+using connect_dentes_API.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -68,12 +69,30 @@ namespace connect_dentes_API.Services.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<bool> GetAcesso(string token)
+        public bool GetAcesso(string controller, string operacao, string token)
         {
             if (token == null)
                 throw new Exception("Forneça um token!");
 
-            return true;
+            var dadosToken = GetDadosToken(token);
+
+            if (dadosToken.Tipo == Tipos.Admin)
+                return true;
+
+            foreach (var acesso in Acessos.acessos)
+            {
+                var acessoOperacao = acesso.controller.Split("_").LastOrDefault();
+
+                if (acesso.controller.Contains(controller) && acessoOperacao == operacao)
+                {
+                    if (acesso.tiposAceitos.Contains(dadosToken.Tipo))
+                        return true;
+                    else
+                        return false; // encontrou o controller, mas o tipo do usuário não possui a permissão
+                }
+            }
+
+            return false;
         }
 
         public JwtSecurityToken LerToken(string token)
@@ -99,6 +118,9 @@ namespace connect_dentes_API.Services.Implementations
 
             if (!tokenJwt.Payload.ContainsKey("tipo"))
                 throw new Exception("Token inválido!");
+
+            if ((tokenJwt.ValidFrom > DateTime.UtcNow) || (tokenJwt.ValidTo < DateTime.UtcNow))
+                throw new Exception("Token expirado!");
 
             return tokenJwt;
         }

@@ -8,7 +8,7 @@ namespace connect_dentes_API.Services.Interfaces
         public string GetHashSenhaSHA256(string senha, string? salt);
         public string GetSalt();
         public string GenerateToken(UsuarioDto usuario);
-        public Task<bool> GetAcesso(string token);
+        public bool GetAcesso(string controller, string operacao, string token);
         public JwtSecurityToken LerToken(string token);
         public JwtSecurityToken ValidaToken(string token);
         public DadosTokenDto GetDadosToken(string token);
