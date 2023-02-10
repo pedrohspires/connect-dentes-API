@@ -12,8 +12,8 @@ using connect_dentes_API;
 namespace connectdentesAPI.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20230201124029_Usuario")]
-    partial class Usuario
+    [Migration("20230210143451_Usuario_Cliente_Atendimento")]
+    partial class UsuarioClienteAtendimento
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,6 +34,10 @@ namespace connectdentesAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_cliente");
+
                     b.Property<DateTime>("DataAtendimento")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_atendimento");
@@ -42,8 +46,8 @@ namespace connectdentesAPI.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_cadastro");
 
-                    b.Property<string>("DataEdicao")
-                        .HasColumnType("text")
+                    b.Property<DateTime?>("DataEdicao")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_edicao");
 
                     b.Property<DateTime?>("DataRetorno")
@@ -63,11 +67,6 @@ namespace connectdentesAPI.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_medico");
 
-                    b.Property<string>("NomePaciente")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("paciente_nome");
-
                     b.Property<string>("Observacoes")
                         .HasColumnType("text")
                         .HasColumnName("observacoes");
@@ -82,9 +81,94 @@ namespace connectdentesAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClienteId");
+
                     b.HasIndex("MedicoId");
 
                     b.ToTable("Atendimento");
+                });
+
+            modelBuilder.Entity("connect_dentes_API.Entities.Cliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bairro")
+                        .HasColumnType("text")
+                        .HasColumnName("bairro");
+
+                    b.Property<string>("Cidade")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("cidade");
+
+                    b.Property<string>("Complemento")
+                        .HasColumnType("text")
+                        .HasColumnName("complemento");
+
+                    b.Property<string>("Cpf")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("cpf");
+
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("data_cadastro");
+
+                    b.Property<DateTime?>("DataEdicao")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("data_edicao");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsWhatsapp")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_whatsapp");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nome");
+
+                    b.Property<int?>("Numero")
+                        .HasColumnType("integer")
+                        .HasColumnName("numero");
+
+                    b.Property<string>("Rua")
+                        .HasColumnType("text")
+                        .HasColumnName("rua");
+
+                    b.Property<string>("Telefone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("telefone");
+
+                    b.Property<string>("UF")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("uf");
+
+                    b.Property<DateTime?>("UltimoAtendimento")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ultimo_atendimento");
+
+                    b.Property<string>("UsuarioCadastro")
+                        .HasColumnType("text")
+                        .HasColumnName("usuario_cadastro");
+
+                    b.Property<string>("UsuarioEdicao")
+                        .HasColumnType("text")
+                        .HasColumnName("usuario_edicao");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cliente");
                 });
 
             modelBuilder.Entity("connect_dentes_API.Entities.Usuario", b =>
@@ -104,8 +188,8 @@ namespace connectdentesAPI.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_cadastro");
 
-                    b.Property<string>("DataEdicao")
-                        .HasColumnType("text")
+                    b.Property<DateTime?>("DataEdicao")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_edicao");
 
                     b.Property<string>("Email")
@@ -147,11 +231,19 @@ namespace connectdentesAPI.Migrations
 
             modelBuilder.Entity("connect_dentes_API.Entities.Atendimento", b =>
                 {
+                    b.HasOne("connect_dentes_API.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("connect_dentes_API.Entities.Usuario", "Medico")
                         .WithMany()
                         .HasForeignKey("MedicoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cliente");
 
                     b.Navigation("Medico");
                 });
