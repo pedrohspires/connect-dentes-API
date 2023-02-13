@@ -28,6 +28,11 @@
             new TipoAcesso("atendimento_cadastrar", new List<string>{ Tipos.Admin, Tipos.Medico}),
             new TipoAcesso("atendimento_editar", new List<string>{ Tipos.Admin, Tipos.Medico}),
             new TipoAcesso("atendimento_excluir", new List<string>{ Tipos.Admin, Tipos.Medico}),
+
+            new TipoAcesso("agendamento_listar", new List<string>{ Tipos.Admin, Tipos.Medico, Tipos.Atendente}),
+            new TipoAcesso("agendamento_cadastrar", new List<string>{ Tipos.Admin, Tipos.Atendente}),
+            new TipoAcesso("agendamento_editar", new List<string>{ Tipos.Admin, Tipos.Atendente}),
+            new TipoAcesso("agendamento_excluir", new List<string>{ Tipos.Admin, Tipos.Atendente}),
         };
     }
 }
