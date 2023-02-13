@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using connect_dentes_API;
@@ -11,9 +12,11 @@ using connect_dentes_API;
 namespace connectdentesAPI.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20230213124527_Agendamento")]
+    partial class Agendamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,6 +50,10 @@ namespace connectdentesAPI.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("data_edicao");
 
+                    b.Property<int>("MedicoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_medico");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
@@ -63,6 +70,8 @@ namespace connectdentesAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("MedicoId");
 
                     b.ToTable("agendamento");
                 });
@@ -279,7 +288,15 @@ namespace connectdentesAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("connect_dentes_API.Entities.Usuario", "Medico")
+                        .WithMany()
+                        .HasForeignKey("MedicoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Cliente");
+
+                    b.Navigation("Medico");
                 });
 
             modelBuilder.Entity("connect_dentes_API.Entities.Atendimento", b =>

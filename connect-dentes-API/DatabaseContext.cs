@@ -12,5 +12,6 @@ namespace connect_dentes_API
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Atendimento> Atendimento { get; set; }
         public DbSet<Cliente> Cliente { get; set; }
+        public DbSet<Agendamento> Agendamento { get; set; }
     }
 }
