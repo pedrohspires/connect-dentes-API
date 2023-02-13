@@ -60,12 +60,15 @@ namespace connect_dentes_API.Repositories.Implementations
                     Tipo = usuario.Tipo
                 };
 
+                var cliente = await _dbContext.Cliente.Where(x => x.Id == atendimento.ClienteId).FirstOrDefaultAsync();
+
                 listaAtendimentos.Add(new AtendimentoDto
                 {
                     Id = atendimento.Id,
                     MedicoId = atendimento.MedicoId,
                     Medico = medicoAtendimento,
                     ClienteId = atendimento.ClienteId,
+                    Cliente = cliente,
                     Detalhes = atendimento.Detalhes,
                     Observacoes = atendimento.Observacoes,
                     Dentes = atendimento.Dentes,
