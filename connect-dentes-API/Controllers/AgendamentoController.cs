@@ -41,6 +41,26 @@ namespace connect_dentes_API.Controllers
             }
         }
 
+        [HttpGet("select")]
+        public async Task<ActionResult<List<AgendamentoSelectDto>>> GetAgendamentosSelect()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"];
+                var temAcesso = _authService.GetAcesso("agendamento", "listar", token);
+
+                if (!temAcesso)
+                    throw new Exception("Você não tem autorização para listar agendamentos");
+
+                var agendamentosSelect = await _agendamentoRepository.GetSelect();
+                return Ok(agendamentosSelect);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("Listar")]
         public async Task<ActionResult<List<Agendamento>>> GetAgendamentos([FromBody]AgendamentoFiltroDto filtros)
         {
