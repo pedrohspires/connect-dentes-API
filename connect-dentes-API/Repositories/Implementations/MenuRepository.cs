@@ -18,6 +18,13 @@ namespace connect_dentes_API.Repositories.Implementations
             {
                 Nome = "Cliente",
                 Link = "/Cliente",
+                ReactIcon = "BsFillPersonFill",
+                TiposAceitos = new List<string>{ Tipos.Gerente, Tipos.Medico, Tipos.Atendente }
+            },
+            new MenuItemDto
+            {
+                Nome = "Agendamento",
+                Link = "/Agendamento",
                 ReactIcon = "TfiAgenda",
                 TiposAceitos = new List<string>{ Tipos.Gerente, Tipos.Medico, Tipos.Atendente }
             }

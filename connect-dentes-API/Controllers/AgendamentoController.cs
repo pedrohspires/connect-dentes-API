@@ -82,6 +82,27 @@ namespace connect_dentes_API.Controllers
             }
         }
 
+        [HttpPost("HorariosDisponiveis")]
+        public async Task<ActionResult<List<DateTime>>> GetHorariosDisponiveis([FromBody]AgendamentoHorarioDisponivelFiltro data)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"];
+                var dadosToken = _authService.GetDadosToken(token);
+                var temAcesso = _authService.GetAcesso("agendamento", "listar", token);
+
+                if (!temAcesso)
+                    throw new Exception("Você não tem autorização para listar!");
+
+                var agenda = await _agendamentoRepository.GetHorarios(data.DataAgendamento);
+                return Ok(agenda);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<Agendamento>> Update([FromBody] AgendamentoCreateDto agendamento, int id)
         {
