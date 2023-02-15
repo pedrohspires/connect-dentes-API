@@ -132,6 +132,7 @@ namespace connect_dentes_API.Services.Implementations
 
             var dadosToken = new DadosTokenDto
             {
+                Id = int.Parse(tokenJwt.Payload["id"].ToString()),
                 Nome = tokenJwt.Payload["nome"].ToString(),
                 Tipo = tokenJwt.Payload["tipo"].ToString()
             };
