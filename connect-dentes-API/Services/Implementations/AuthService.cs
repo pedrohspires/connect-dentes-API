@@ -55,6 +55,7 @@ namespace connect_dentes_API.Services.Implementations
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
+                new Claim("id", usuario.Id.ToString()),
                 new Claim("nome", usuario.Nome),
                 new Claim("tipo", usuario.Tipo)
             };
