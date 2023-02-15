@@ -71,7 +71,7 @@ namespace connect_dentes_API.Controllers
                 if (!temAcesso)
                     throw new Exception("Você não tem autorização para cadastrar atendimentos");
 
-                return await _atendimentoRepository.Create(atendimento, dadosToken.Nome);
+                return await _atendimentoRepository.Create(atendimento, dadosToken.Id, dadosToken.Nome);
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace connect_dentes_API.Controllers
                 if (!temAcesso)
                     throw new Exception("Você não tem autorização para editar um atendimento");
 
-                return await _atendimentoRepository.Update(atendimento, id, dadosToken.Nome);
+                return await _atendimentoRepository.Update(atendimento, id, dadosToken.Id, dadosToken.Nome);
             }
             catch (Exception ex)
             {
