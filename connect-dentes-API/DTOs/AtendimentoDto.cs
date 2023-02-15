@@ -13,6 +13,10 @@ namespace connect_dentes_API.DTOs
 
         public Cliente? Cliente { get; set; }
 
+        public int? AgendamentoId { get; set; }
+
+        public Agendamento? Agendamento { get; set; }
+
         public string Detalhes { get; set; }
 
         public string? Observacoes { get; set; }
