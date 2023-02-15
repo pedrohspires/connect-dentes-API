@@ -13,6 +13,10 @@ namespace connect_dentes_API.Entities
         public int ClienteId{ get; set; }
         public Cliente? Cliente { get; set; }
 
+        [Column("id_agendamento")]
+        public int? AgendamentoId { get; set; }
+        public Agendamento? Agendamento { get; set; }
+
         [Column("detalhes")]
         public string Detalhes { get; set; }
 
