@@ -21,11 +21,8 @@ namespace connect_dentes_API.Repositories.Implementations
             if (atendimento == null)
                 throw new Exception("Forneça os dados do atendimento!");
 
-            if (atendimento.MedicoId == null)
-                throw new Exception("Médico não informado!");
-
-            if (atendimento.ClienteId == null)
-                throw new Exception("Cliente não informado!");
+            if (atendimento.ClienteId == null && atendimento.AgendamentoId == null)
+                throw new Exception("Informe um agendamento ou um cliente!");
 
             if (atendimento.Detalhes == null || atendimento.Detalhes.Length == 0)
                 throw new Exception("Informe os detalhes do atendimento!");
@@ -35,23 +32,15 @@ namespace connect_dentes_API.Repositories.Implementations
 
             return true;
         }
-        
-        private async Task VerificaMedicoExiste(int medicoId)
-        {
-            var medico = await _dbContext.Usuario.Where(x => x.Id == medicoId && x.Tipo == Tipos.Medico).FirstOrDefaultAsync();
 
-            if (medico == null)
-                throw new Exception("Médico não encontrado!");
-        }
-        
         public async Task<List<AtendimentoDto>> GetAll()
         {
             var atendimentos = await _dbContext.Atendimento.ToListAsync();
 
             var listaAtendimentos = new List<AtendimentoDto>();
-            foreach(var atendimento in atendimentos)
+            foreach (var atendimento in atendimentos)
             {
-                var usuario = await _dbContext.Usuario.Where(x => x.Id == atendimento.MedicoId && x.Tipo == Tipos.Medico).FirstOrDefaultAsync();
+                var usuario = await _dbContext.Usuario.Where(x => x.Id == atendimento.MedicoId && (x.Tipo == Tipos.Medico || x.Tipo == Tipos.Admin)).FirstOrDefaultAsync();
                 UsuarioDto medicoAtendimento = new UsuarioDto
                 {
                     Nome = usuario.Nome,
@@ -69,6 +58,7 @@ namespace connect_dentes_API.Repositories.Implementations
                     Medico = medicoAtendimento,
                     ClienteId = atendimento.ClienteId,
                     Cliente = cliente,
+                    AgendamentoId = atendimento.AgendamentoId,
                     Detalhes = atendimento.Detalhes,
                     Observacoes = atendimento.Observacoes,
                     Dentes = atendimento.Dentes,
@@ -96,6 +86,7 @@ namespace connect_dentes_API.Repositories.Implementations
                 Id = atendimento.Id,
                 MedicoId = atendimento.MedicoId,
                 ClienteId = atendimento.ClienteId,
+                AgendamentoId = atendimento.AgendamentoId,
                 Detalhes = atendimento.Detalhes,
                 Observacoes = atendimento.Observacoes,
                 Dentes = atendimento.Dentes,
@@ -108,15 +99,16 @@ namespace connect_dentes_API.Repositories.Implementations
             };
         }
 
-        public async Task<AtendimentoDto> Create(AtendimentoCreateDto atendimento, string userName)
+        public async Task<AtendimentoDto> Create(AtendimentoCreateDto atendimento, int medicoId, string userName)
         {
             VerificaAtendimento(atendimento);
-            await VerificaMedicoExiste((int)atendimento.MedicoId);
+            Agendamento? agendamento = await GetAgendamento(atendimento);
 
             var novoAtendimento = new Atendimento
             {
-                MedicoId = (int)atendimento.MedicoId,
-                ClienteId = (int)atendimento.ClienteId,
+                MedicoId = medicoId,
+                ClienteId = atendimento.ClienteId != null ? (int)atendimento.ClienteId : agendamento.ClienteId,
+                AgendamentoId = atendimento.AgendamentoId,
                 Detalhes = atendimento.Detalhes,
                 Observacoes = atendimento.Observacoes,
                 Dentes = atendimento.Dentes,
@@ -129,11 +121,13 @@ namespace connect_dentes_API.Repositories.Implementations
             await _dbContext.Atendimento.AddAsync(novoAtendimento);
             await _dbContext.SaveChangesAsync();
 
-            return new AtendimentoDto 
+            return new AtendimentoDto
             {
                 Id = novoAtendimento.Id,
                 MedicoId = novoAtendimento.MedicoId,
                 ClienteId = novoAtendimento.ClienteId,
+                AgendamentoId = novoAtendimento.AgendamentoId,
+                Agendamento = agendamento,
                 Detalhes = novoAtendimento.Detalhes,
                 Observacoes = novoAtendimento.Observacoes,
                 Dentes = novoAtendimento.Dentes,
@@ -144,18 +138,50 @@ namespace connect_dentes_API.Repositories.Implementations
             };
         }
 
-        public async Task<bool> Update(AtendimentoCreateDto atendimento, int atendimentoId, string userName)
+        private async Task<Agendamento> GetAgendamento(AtendimentoCreateDto atendimento)
+        {
+            Agendamento? agendamento = null;
+            if (atendimento.AgendamentoId != null)
+            {
+                agendamento = await _dbContext.Agendamento.Where(x => x.Id == atendimento.AgendamentoId).FirstOrDefaultAsync();
+                if (agendamento == null)
+                    throw new Exception("Agendamento não encontrado!");
+
+                if (atendimento.ClienteId != null && atendimento.ClienteId != agendamento.ClienteId)
+                    throw new Exception("O cliente informado é diferente do cliente agendado!");
+
+                await AlteraStatusAgendamento(agendamento);
+            }
+
+            return agendamento;
+        }
+
+        private async Task AlteraStatusAgendamento(Agendamento? agendamento)
+        {
+            if (agendamento.Status != AgendamentoStatus.Atendido && agendamento.Status != AgendamentoStatus.AtendidoComAtraso)
+            {
+                if (agendamento.DataAgendada < DateTime.Now)
+                    agendamento.Status = AgendamentoStatus.AtendidoComAtraso;
+                else
+                    agendamento.Status = AgendamentoStatus.Atendido;
+
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> Update(AtendimentoCreateDto atendimento, int atendimentoId, int medicoId, string userName)
         {
             var atendimentoAtual = await _dbContext.Atendimento.Where(x => x.Id == atendimentoId).FirstOrDefaultAsync();
+            Agendamento? agendamento = await GetAgendamento(atendimento);
 
             if (atendimentoAtual == null)
                 throw new Exception("Atendimento não encontrado");
 
             VerificaAtendimento(atendimento);
-            await VerificaMedicoExiste((int)atendimento.MedicoId);
 
-            atendimentoAtual.MedicoId = (int)atendimento.MedicoId;
-            atendimentoAtual.ClienteId = (int)atendimento.ClienteId;
+            atendimentoAtual.MedicoId = medicoId;
+            atendimentoAtual.ClienteId = atendimento.ClienteId != null ? (int)atendimento.ClienteId : agendamento.ClienteId;
+            atendimentoAtual.AgendamentoId = atendimento.AgendamentoId;
             atendimentoAtual.Detalhes = atendimento.Detalhes;
             atendimentoAtual.Observacoes = atendimento.Observacoes;
             atendimentoAtual.Dentes = atendimento.Dentes;

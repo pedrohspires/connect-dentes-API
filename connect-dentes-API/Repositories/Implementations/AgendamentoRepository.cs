@@ -119,6 +119,33 @@ namespace connect_dentes_API.Repositories.Implementations
             return agendamento;
         }
 
+        public async Task<List<AgendamentoSelectDto>> GetSelect()
+        {
+            await AtualizaStatus();
+            var agendamentos = await _dbContext.Agendamento
+                                                    .Where(x => x.Status != AgendamentoStatus.Atendido && 
+                                                                x.Status != AgendamentoStatus.AtendidoComAtraso)
+                                                    .Include("Cliente")
+                                                    .ToListAsync();
+
+            if (agendamentos == null || agendamentos.Count == 0)
+                throw new Exception("Não foram encontrados agendamentos para o select");
+
+            var agendamentosSelect = new List<AgendamentoSelectDto>();
+
+            foreach(var agendamento in agendamentos)
+            {
+                agendamentosSelect.Add(new AgendamentoSelectDto
+                {
+                    Id = agendamento.Id,
+                    NomeCliente = agendamento.Cliente.Nome,
+                    Status = agendamento.Status
+                });
+            }
+
+            return agendamentosSelect;
+        }
+
         public async Task<List<Agendamento>> GetAll(AgendamentoFiltroDto filtros)
         {
             await AtualizaStatus();
@@ -142,6 +169,7 @@ namespace connect_dentes_API.Repositories.Implementations
             VerificaAgendamentoCreate(agendamentoDto);
             await VerificaClienteExistente(agendamentoDto);
             await VerificaClienteComAgendamento(agendamentoDto);
+            await AtualizaStatus();
 
             var novoAgendamento = new Agendamento
             {
@@ -159,6 +187,7 @@ namespace connect_dentes_API.Repositories.Implementations
 
         public async Task<List<DateTime>> GetHorarios(DateTime? dataAgendada)
         {
+            await AtualizaStatus();
             if (dataAgendada == null)
                 throw new Exception("Forneça uma data para o agendamento!");
 
@@ -171,6 +200,7 @@ namespace connect_dentes_API.Repositories.Implementations
 
         public async Task<Agendamento> Update(AgendamentoCreateDto agendamentoDto, int id, string userName)
         {
+            await AtualizaStatus();
             var agendamento = await _dbContext.Agendamento.Where(x => x.Id == id).FirstOrDefaultAsync();
 
             if (agendamento == null)
